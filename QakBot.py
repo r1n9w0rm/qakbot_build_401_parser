@@ -139,6 +139,12 @@ def decrypt_build_401_data(data):
 
     return decrypted_data
 
+"""
+    Decompress data with blzpack decompression
+"""
+def decompress(data):
+    return blzpack.decompress_data(BRIEFLZ_HEADER.join(data.split(QAKBOT_HEADER)))
+
 
 def main():
     parser = argparse.ArgumentParser(description="Qakbot config extraction updated to support build 401.")
@@ -161,8 +167,9 @@ def main():
                 if entry.name.__str__() == '307':
                     # we found the parent process and still need to decrypt/(blzpack) decompress the main DLL
                     dec_bytes = decrypt_data(res_data)
+                    decompressed = decompress(dec_bytes)
                     print("other", {"Loader Build": parse_build(pe).decode("utf-8")})
-                    pe2 = pefile.PE(data = '')
+                    pe2 = pefile.PE(data = decompressed)
                     for rsrc in pe2.DIRECTORY_ENTRY_RESOURCE.entries:
                         for entry in rsrc.directory.entries:
                             if entry.name is not None:
